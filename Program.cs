@@ -18,31 +18,59 @@ namespace GuidToClipboard
 
             if (format.Contains("?"))
             {
-                new AboutBox().ShowDialog();
+                ShowAboutBox();
                 return;
+            }
+
+            if (IsValid(format))
+            {
+                WriteGuidToClipboard(format);
+                return;
+            }
+
+            try
+            {
+                format = (string)(new AppSettingsReader().GetValue("Format", typeof(string)));
+            }
+            catch (InvalidOperationException)
+            {
+            }
+        
+            if (!IsValid(format))
+            {
+                format = "";
+            }
+            
+            WriteGuidToClipboard(format);
+        }
+
+        private static void ShowAboutBox()
+        {
+            new AboutBox().ShowDialog();
+        }
+
+        private static bool IsValid(string format)
+        {
+            if (format == "")
+            {
+                return false;
             }
 
             if (format.Length > 1)
             {
-                format = "";
+                return false;
             }
 
             if (!"NDBPX".Contains(format))
             {
-                format = "";
+                return false;
             }
 
-            if (format == "")
-            {
-                try
-                {
-                    format = (string)(new AppSettingsReader().GetValue("Format", typeof(string)));
-                }
-                catch (InvalidOperationException)
-                { 
-                }
-            }
+            return true;
+        }
 
+        private static void WriteGuidToClipboard(string format)
+        {
             Clipboard.SetText(System.Guid.NewGuid().ToString(format));
         }
     }
